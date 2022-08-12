@@ -24,6 +24,12 @@ export const filterSlice = createSlice({
         },
         setSearchValue(state, action) {
             state.searchValue = action.payload;
+        },
+        setPageParameters(state, action) {
+            state.selectedCategoryIndex = Number(action.payload.category);
+            state.selectedCategoryName = action.payload.categoryName;
+            state.selectedSortParameterIndex = Number(action.payload.sort);
+            state.currentPage = Number(action.payload.page);
         }
     }
 });
@@ -33,7 +39,8 @@ export const {
     setCategoryName,
     setSortParameter,
     setCurrentPage,
-    setSearchValue
+    setSearchValue,
+    setPageParameters
 } = filterSlice.actions;
 
 export default filterSlice.reducer;

@@ -1,9 +1,11 @@
 import React from 'react';
 
 import axios from 'axios';
+import qs from 'qs';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-import { setCurrentPage } from '../redux/slices/filterSlice';
+import { setCurrentPage, setPageParameters } from '../redux/slices/filterSlice';
 
 import { Overlay, Categories, Sort, Pizza, Skeleton, Pagination } from '../components/';
 
@@ -11,6 +13,9 @@ const sortParameters = ["popularity", "popularity", "cost", "cost", "name", "nam
 
 export const Home = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const isMounted = React.useRef(false);
 
     const searchValue = useSelector((state) => state.filter.searchValue);
 
@@ -43,6 +48,31 @@ export const Home = () => {
 
         fetchData();
     }, [selectedCategoryIndex, selectedSortParameter, currentPage]);
+
+    // -------page parameters from url-------
+    React.useEffect(() => {
+        if (window.location.search) {
+            console.log(window.location.search);
+
+            const pageParameters = qs.parse(window.location.search.substring(1));
+
+            dispatch(setPageParameters(pageParameters));
+        }
+    }, []);
+
+    React.useEffect(() => {
+        if (isMounted.current) {
+            const queryString = qs.stringify({
+                category: selectedCategoryIndex,
+                categoryName: selectedCategoryName,
+                sort: selectedSortParameter,
+                page: currentPage
+            });
+            navigate(`?${queryString}`);
+        }
+        isMounted.current = true; // if we changed parameters and first render -> true;
+    }, [selectedCategoryIndex, selectedSortParameter, currentPage]);
+    // -------page parameters from url-------
 
     // --------overlay--------
     const [overlayOpened, setOverlayOpened] = React.useState(false);

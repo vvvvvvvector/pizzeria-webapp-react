@@ -15,6 +15,7 @@ export const Home = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const isSearch = React.useRef(false);
     const isMounted = React.useRef(false);
 
     const searchValue = useSelector((state) => state.filter.searchValue);
@@ -34,31 +35,33 @@ export const Home = () => {
     // sort component
     const selectedSortParameter = useSelector((state) => state.filter.selectedSortParameterIndex);
 
-    React.useEffect(() => {
-        async function fetchData() {
-            setLoading(true);
+    const fetchData = async () => {
+        setLoading(true);
 
-            const pizzasResponse = await
-                axios.get(`https://62e2f40c3891dd9ba8f276a3.mockapi.io/pizzas?page=${currentPage}&limit=4&categories=${selectedCategoryIndex}&sortBy=${sortParameters[selectedSortParameter]}&order=${selectedSortParameter % 2 === 0 ? "asc" : "desc"}`);
+        const pizzasResponse = await
+            axios.get(`https://62e2f40c3891dd9ba8f276a3.mockapi.io/pizzas?page=${currentPage}&limit=4&categories=${selectedCategoryIndex}&sortBy=${sortParameters[selectedSortParameter]}&order=${selectedSortParameter % 2 === 0 ? "asc" : "desc"}`);
 
-            setLoading(false);
+        setFetchedPizzas(pizzasResponse.data);
 
-            setFetchedPizzas(pizzasResponse.data);
-        }
+        setLoading(false);
+    };
 
-        fetchData();
-    }, [selectedCategoryIndex, selectedSortParameter, currentPage]);
-
-    // -------page parameters from url-------
     React.useEffect(() => {
         if (window.location.search) {
-            console.log(window.location.search);
-
             const pageParameters = qs.parse(window.location.search.substring(1));
 
             dispatch(setPageParameters(pageParameters));
+
+            isSearch.current = true;
         }
     }, []);
+
+    React.useEffect(() => {
+        if (!isSearch.current) {
+            fetchData();
+        }
+        isSearch.current = false;
+    }, [selectedCategoryIndex, selectedSortParameter, currentPage]);
 
     React.useEffect(() => {
         if (isMounted.current) {
@@ -70,7 +73,7 @@ export const Home = () => {
             });
             navigate(`?${queryString}`);
         }
-        isMounted.current = true; // if we changed parameters and first render -> true;
+        isMounted.current = true;
     }, [selectedCategoryIndex, selectedSortParameter, currentPage]);
     // -------page parameters from url-------
 
